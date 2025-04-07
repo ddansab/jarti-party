@@ -3,20 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marti & Joe 70th RSVP</title>
+    <title>Marti & Joe's 70th RSVP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <style>
-        body { background-color: #f8f9fa; font-family: Arial, sans-serif; }
-        .container { max-width: 800px; margin-top: 50px; }
-        .event-details { text-align: center; margin-bottom: 30px; }
-        #rsvp-form, #confirmation { display: none; }
-        #party-size-group { display: none; }
+       body { 
+            background-color: #f8f9fa; 
+            background-image: url("./img/pexels-nietjuhart-796605.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container { 
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 25px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 
+                       0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .event-details { 
+            text-align: center; 
+            margin-bottom: 30px; 
+        }
+        #rsvp-form, #confirmation { 
+            display: none; 
+        }
+        #party-size-group { 
+            display: none; 
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 35px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="event-details">
-            <h1>Marti & Joe Turn 70</h1>
+            <h1>Marti & Joe's Sweet <s>16</s> 70</h1>
             <p>Join us for an evening of fun! (PLEASE DON'T BRING GIFTS)</p>
             <p><strong>Date:</strong> June 15, 2025 | <strong>Time:</strong> 6:00 PM | <strong>Location:</strong> The place</p>
         </div>
