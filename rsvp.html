@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin-top: 50px; }
+        #rsvp-table { display: none; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .rsvp-counts { font-size: 1.2rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="auth-entry">
+            <h3>Organizer Login</h3>
+            <input type="email" id="email" class="form-control mb-3" placeholder="Email">
+            <input type="password" id="password" class="form-control mb-3" placeholder="Password">
+            <button id="login-submit" class="btn btn-primary">Login</button>
+            <p id="error-message" class="text-danger mt-2" style="display: none;">Login failed. Check credentials.</p>
+        </div>
+
+        <div id="rsvp-table">
+            <div class="header-container">
+                <h1>RSVP List</h1>
+                <div class="rsvp-counts">
+                    Yes: <span id="yes-count">0</span> | 
+                    No: <span id="no-count">0</span> | 
+                    Total Attendees: <span id="total-attendees">0</span>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Attending</th>
+                        <th>Number in Party</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="rsvp-body"></tbody>
+            </table>
+            <button id="logout" class="btn btn-secondary mt-3">Logout</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyByWrs6iY1gxJ9hq7pY4dDEaCnVBp2RRq4",
+            authDomain: "joe-and-marti-party.firebaseapp.com",
+            projectId: "joe-and-marti-party",
+            storageBucket: "joe-and-marti-party.firebasestorage.app",
+            messagingSenderId: "517496032865",
+            appId: "1:517496032865:web:c7e74a281dcd3965a46420"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        function loadRSVPs() {
+            db.collection("rsvps")
+                .orderBy("timestamp", "desc")
+                .onSnapshot((snapshot) => {
+                    const rsvpBody = document.getElementById("rsvp-body");
+                    const yesCountEl = document.getElementById("yes-count");
+                    const noCountEl = document.getElementById("no-count");
+                    const totalAttendeesEl = document.getElementById("total-attendees");
+                    rsvpBody.innerHTML = "";
+
+                    let yesCount = 0, noCount = 0, totalAttendees = 0;
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.attend === "yes") {
+                            yesCount++;
+                            totalAttendees += data.partySize || 0;
+                        } else if (data.attend === "no") {
+                            noCount++;
+                        }
+                        const row = `
+                            <tr>
+                                <td>${data.name}</td>
+                                <td>${data.email}</td>
+                                <td>${data.phone || "N/A"}</td>
+                                <td>${data.attend === "yes" ? "Yes" : "No"}</td>
+                                <td>${data.partySize || "N/A"}</td>
+                                <td>${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : "N/A"}</td>
+                            </tr>
+                        `;
+                        rsvpBody.innerHTML += row;
+                    });
+                    yesCountEl.textContent = yesCount;
+                    noCountEl.textContent = noCount;
+                    totalAttendeesEl.textContent = totalAttendees;
+                }, (error) => {
+                    console.error("Error fetching RSVPs: ", error);
+                    alert("Error loading RSVP list.");
+                });
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById("auth-entry").style.display = "none";
+                document.getElementById("rsvp-table").style.display = "block";
+                loadRSVPs();
+            } else {
+                document.getElementById("auth-entry").style.display = "block";
+                document.getElementById("rsvp-table").style.display = "none";
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("login-submit").addEventListener("click", () => {
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+                auth.signInWithEmailAndPassword(email, password)
+                    .catch(() => {
+                        document.getElementById("error-message").style.display = "block";
+                    });
+            });
+            document.getElementById("logout").addEventListener("click", () => {
+                auth.signOut();
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

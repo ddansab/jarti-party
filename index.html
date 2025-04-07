@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marti & Joe 70th RSVP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin-top: 50px; }
+        .event-details { text-align: center; margin-bottom: 30px; }
+        #rsvp-form, #confirmation { display: none; }
+        #party-size-group { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="event-details">
+            <h1>Marti & Joe Turn 70</h1>
+            <p>Join us for an evening of fun! (PLEASE DON'T BRING GIFTS)</p>
+            <p><strong>Date:</strong> June 15, 2025 | <strong>Time:</strong> 6:00 PM | <strong>Location:</strong> The place</p>
+        </div>
+
+        <div id="code-entry">
+            <h3>Enter Your RSVP Code</h3>
+            <input type="text" id="code-input" class="form-control mb-3" placeholder="Enter code here">
+            <button id="code-submit" class="btn btn-primary">Submit Code</button>
+            <p id="error-message" class="text-danger mt-2" style="display: none;">Invalid code. Please try again.</p>
+        </div>
+
+        <div id="rsvp-form">
+            <h3>Please RSVP</h3>
+            <form id="rsvp-submit">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="example@email.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="attend" class="form-label">Will you be able to make it?</label>
+                    <select id="attend" name="attend" class="form-select" required>
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="party-size-group">
+                    <label for="party-size" class="form-label">Number in Party (including yourself)</label>
+                    <input type="number" id="party-size" name="party-size" class="form-control" min="1" placeholder="Enter number of attendees">
+                </div>
+                <button type="submit" class="btn btn-success">Submit RSVP</button>
+            </form>
+        </div>
+
+        <div id="confirmation">
+            <h3>Thank You!</h3>
+            <p>Your RSVP has been recorded.</p>
+        </div>
+    </div>
+
+    <!-- Firebase v8 SDK (Legacy) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyByWrs6iY1gxJ9hq7pY4dDEaCnVBp2RRq4",
+            authDomain: "joe-and-marti-party.firebaseapp.com",
+            projectId: "joe-and-marti-party",
+            storageBucket: "joe-and-marti-party.firebasestorage.app",
+            messagingSenderId: "517496032865",
+            appId: "1:517496032865:web:c7e74a281dcd3965a46420"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const VALID_CODE = atob("Q0VMRUJSQVRFNzA=");
+
+        function checkCode() {
+            const inputCode = document.getElementById("code-input").value.trim();
+            if (inputCode === VALID_CODE) {
+                document.getElementById("code-entry").style.display = "none";
+                document.getElementById("rsvp-form").style.display = "block";
+                document.getElementById("error-message").style.display = "none";
+            } else {
+                document.getElementById("error-message").style.display = "block";
+            }
+        }
+
+        function formatPhoneNumber(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove non-digits
+            if (value.length > 3 && value.length <= 6) {
+                value = `${value.slice(0, 3)}-${value.slice(3)}`;
+            } else if (value.length > 6) {
+                value = `${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6, 10)}`;
+            }
+            input.value = value;
+        }
+
+        document.getElementById("phone").addEventListener("input", function() {
+            formatPhoneNumber(this);
+        });
+
+        function togglePartySize() {
+            const attend = document.getElementById("attend").value;
+            const partySizeGroup = document.getElementById("party-size-group");
+            const partySizeInput = document.getElementById("party-size");
+            
+            if (attend === "yes") {
+                partySizeGroup.style.display = "block";
+                partySizeInput.setAttribute("required", "true");
+            } else {
+                partySizeGroup.style.display = "none";
+                partySizeInput.removeAttribute("required");
+            }
+        }
+
+        function submitRSVP(event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            const email = document.getElementById("email").value;
+            const attend = document.getElementById("attend").value;
+            const partySize = attend === "yes" ? document.getElementById("party-size").value : null;
+
+            const rsvpData = {
+                name: name,
+                phone: phone,
+                email: email,
+                attend: attend,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (attend === "yes") {
+                rsvpData.partySize = parseInt(partySize);
+            }
+
+            db.collection("rsvps").add(rsvpData)
+            .then(() => {
+                document.getElementById("rsvp-form").style.display = "none";
+                document.getElementById("confirmation").style.display = "block";
+            })
+            .catch((error) => {
+                console.error("Error adding RSVP: ", error);
+                alert("Error submitting RSVP. Please try again.");
+            });
+        }
+
+        // Add event listeners after DOM is loaded
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("code-submit").addEventListener("click", checkCode);
+            document.getElementById("rsvp-submit").addEventListener("submit", submitRSVP);
+            document.getElementById("attend").addEventListener("change", togglePartySize);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
