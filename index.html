@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <style>
-       body { 
+        body { 
             background-color: #f8f9fa; 
             background-image: url("./img/pexels-nietjuhart-796605.jpg");
             background-size: cover;
@@ -32,7 +32,7 @@
             text-align: center; 
             margin-bottom: 30px; 
         }
-        #rsvp-form, #confirmation { 
+        #confirmation { 
             display: none; 
         }
         #party-size-group { 
@@ -50,14 +50,7 @@
         <div class="event-details">
             <h1>Marti & Joe's Sweet <s>16</s> 70</h1>
             <p>Join us for an afternoon of fun! (PLEASE DON'T BRING GIFTS)</p>
-            <p><strong>&#x1F4C5;:</strong> Sat, July 12 | <strong>&#x1F550;:</strong> 12:00PM - 4:00PM | <strong>&#x1F4CD;:</strong> <a target="_blank" href="https://maps.app.goo.gl/V2SwEj2nx9jefWsaA">Castle Creek Golf Course</a></p>
-        </div>
-
-        <div id="code-entry">
-            <h3>Enter Your RSVP Code</h3>
-            <input type="text" id="code-input" class="form-control mb-3" placeholder="Enter code here">
-            <button id="code-submit" class="btn btn-primary">Submit Code</button>
-            <p id="error-message" class="text-danger mt-2" style="display: none;">Invalid code. Please try again.</p>
+            <p><strong>📅:</strong> Sat, July 12 | <strong>🕐:</strong> 12:00PM - 4:00PM | <strong>📍:</strong> <a target="_blank" href="https://maps.app.goo.gl/V2SwEj2nx9jefWsaA">Castle Creek Golf Course</a></p>
         </div>
 
         <div id="rsvp-form">
@@ -110,18 +103,6 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const VALID_CODE = atob("Q0VMRUJSQVRFNzA=");
-
-        function checkCode() {
-            const inputCode = document.getElementById("code-input").value.trim();
-            if (inputCode === VALID_CODE) {
-                document.getElementById("code-entry").style.display = "none";
-                document.getElementById("rsvp-form").style.display = "block";
-                document.getElementById("error-message").style.display = "none";
-            } else {
-                document.getElementById("error-message").style.display = "block";
-            }
-        }
 
         function formatPhoneNumber(input) {
             let value = input.value.replace(/\D/g, ''); // Remove non-digits
@@ -184,7 +165,6 @@
 
         // Add event listeners after DOM is loaded
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("code-submit").addEventListener("click", checkCode);
             document.getElementById("rsvp-submit").addEventListener("submit", submitRSVP);
             document.getElementById("attend").addEventListener("change", togglePartySize);
         });
